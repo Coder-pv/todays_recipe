@@ -1,0 +1,432 @@
+:root {
+  /* Figma-aligned palette */
+  --color-brand: #a6442e;
+  --color-brand-muted: #8a3a28;
+  --color-brand-soft: #c46852;
+  --color-forest: #3e6b27;
+  --color-forest-muted: #2d501c;
+  --color-forest-light: #c5e0a8;
+
+  --color-page: #f4f1ec;
+  --color-surface: #ffffff;
+  --color-beige: #f7f5f2;
+  --color-beige-deep: #ebe6df;
+
+  --color-nav-active: #2a2a2a;
+  --color-nav-inactive: #8a8a8a;
+  --color-nav-underline: #3a3a3a;
+
+  --color-text-heading: #1a1a1a;
+  --color-text: #333333;
+  --color-text-muted: #6b6b6b;
+  --color-text-soft: #6b6b6b;
+
+  --color-border-subtle: #e8e8e8;
+  --color-border: #d8d8d8;
+
+  /* Legacy names (screens still reference these) */
+  --color-brown: var(--color-brand);
+  --color-brown-muted: var(--color-brand-muted);
+  --color-orange: var(--color-brand);
+  --color-orange-soft: var(--color-brand-soft);
+
+  font-family: "DM Sans", system-ui, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-page);
+}
+
+.font-brand {
+  font-family: Lora, Georgia, "Times New Roman", serif;
+  font-weight: 700;
+}
+
+.font-script {
+  font-family: "Dancing Script", cursive;
+  font-weight: 700;
+}
+
+.font-sans-heading {
+  font-family: "DM Sans", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+a {
+  color: var(--color-brand);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.app-header a {
+  text-decoration: none;
+}
+
+.app-header a:hover {
+  text-decoration: none;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0.45rem 0.6rem;
+}
+
+label {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+h1,
+h2,
+h3 {
+  color: var(--color-text-heading);
+  font-weight: 600;
+}
+
+.app-nav-link {
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-nav-inactive);
+  padding-bottom: 0.5rem;
+  margin-bottom: -1px;
+  border-bottom: 3px solid transparent;
+}
+
+.app-nav-link:hover {
+  color: var(--color-nav-active);
+}
+
+.app-nav-link--active {
+  font-weight: 600;
+  color: var(--color-nav-active);
+  border-bottom-color: var(--color-nav-underline);
+}
+
+.button--large {
+  min-height: 46px;
+  padding-inline: 1.15rem !important;
+  box-shadow: 0 12px 28px rgba(166, 68, 46, 0.24);
+}
+
+.today-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.today-hero {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1.25rem;
+  align-items: end;
+  min-height: 260px;
+  padding: 1.6rem;
+  border: 1px solid rgba(62, 107, 39, 0.18);
+  border-radius: 8px;
+  color: #fff;
+  background:
+    linear-gradient(135deg, rgba(31, 48, 34, 0.92), rgba(166, 68, 46, 0.7)),
+    url("/hero_banner.png") center/cover;
+  box-shadow: 0 22px 60px rgba(42, 42, 42, 0.16);
+}
+
+.today-hero::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 42%;
+  background: linear-gradient(0deg, rgba(15, 18, 14, 0.45), transparent);
+  pointer-events: none;
+}
+
+.today-hero__content,
+.today-hero__metrics {
+  position: relative;
+  z-index: 1;
+}
+
+.today-kicker {
+  display: inline-flex;
+  width: fit-content;
+  padding: 0.32rem 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.today-hero h1 {
+  margin: 0.65rem 0 0.15rem;
+  color: #fff;
+  font-family: Lora, Georgia, "Times New Roman", serif;
+  font-size: clamp(2.1rem, 5vw, 4.1rem);
+  line-height: 1;
+}
+
+.today-hero p {
+  margin: 0;
+  max-width: 620px;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 1rem;
+}
+
+.today-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.today-source {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 700;
+}
+
+.today-hero__metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(76px, 1fr));
+  gap: 0.55rem;
+}
+
+.today-hero__metrics div {
+  min-width: 76px;
+  padding: 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(10px);
+}
+
+.today-hero__metrics strong {
+  display: block;
+  color: #fff;
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.today-hero__metrics span {
+  display: block;
+  margin-top: 0.28rem;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.8rem;
+}
+
+.today-alert {
+  border-left: 4px solid var(--color-forest) !important;
+  color: var(--color-forest-muted);
+}
+
+.today-alert--error {
+  border-left-color: var(--color-brand) !important;
+  color: var(--color-brand-muted);
+}
+
+.today-alert p {
+  margin: 0;
+}
+
+.meal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.meal-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  box-shadow: 0 14px 36px rgba(42, 42, 42, 0.07);
+}
+
+.meal-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 5px;
+  background: linear-gradient(90deg, var(--color-brand), var(--color-forest));
+}
+
+.meal-card--done {
+  border-color: rgba(62, 107, 39, 0.32) !important;
+  background: linear-gradient(180deg, #fff, #f7fbf2) !important;
+}
+
+.meal-card__top {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.meal-card__slot {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--color-brand);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.meal-card h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  line-height: 1.2;
+}
+
+.meal-card__check {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  height: 32px;
+  padding: 0 0.55rem;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 999px;
+  background: var(--color-beige);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.meal-card__check input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-forest);
+}
+
+.meal-card__description {
+  flex: 1;
+  margin: 0;
+  color: var(--color-text-soft);
+  white-space: pre-wrap;
+}
+
+.meal-card__meta,
+.meal-card__pantry {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.meal-card__meta span,
+.meal-card__pantry span {
+  padding: 0.34rem 0.55rem;
+  border-radius: 999px;
+  background: var(--color-beige);
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+}
+
+.meal-card__meta span:first-child {
+  background: #eef5e7;
+  color: var(--color-forest-muted);
+  font-weight: 700;
+}
+
+.recipe-section {
+  display: grid;
+  gap: 0.5rem;
+  padding-top: 0.15rem;
+}
+
+.recipe-section h3 {
+  margin: 0;
+  color: var(--color-text-heading);
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.recipe-list,
+.recipe-steps {
+  margin: 0;
+  padding: 0;
+}
+
+.recipe-list {
+  display: grid;
+  gap: 0.42rem;
+  list-style: none;
+}
+
+.recipe-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.8rem;
+  align-items: baseline;
+  padding: 0.48rem 0.58rem;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 8px;
+  background: #fbfaf7;
+}
+
+.recipe-list span {
+  min-width: 0;
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+.recipe-list strong {
+  color: var(--color-brand-muted);
+  font-size: 0.82rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.recipe-steps {
+  display: grid;
+  gap: 0.5rem;
+  padding-left: 1.15rem;
+  color: var(--color-text);
+}
+
+.recipe-steps li {
+  padding-left: 0.15rem;
+  font-size: 0.92rem;
+}
+
+@media (max-width: 760px) {
+  .today-hero {
+    grid-template-columns: 1fr;
+    min-height: 0;
+    padding: 1.1rem;
+  }
+
+  .today-hero__metrics {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .today-hero__metrics div {
+    min-width: 0;
+  }
+
+  .meal-card__top {
+    flex-direction: column;
+  }
+
+  .meal-card__check {
+    width: fit-content;
+  }
+}
