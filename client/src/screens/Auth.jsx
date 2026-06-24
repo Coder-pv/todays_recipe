@@ -27,10 +27,10 @@ export default function Auth() {
     <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: "1.5rem" }}>
       <Card style={{ width: "100%", maxWidth: 420 }}>
         <h1 style={{ marginTop: 0 }}>
-          {auth.mode === "register" ? "Create your account" : "Sign in to Today&apos;s Recipe"}
+          {auth.mode === "register" ? "Create your account" : "Sign in"}
         </h1>
         <p style={{ color: "var(--color-text-soft)", marginTop: 0 }}>
-          JWT authentication is required before you can manage pantry items and meal plans.
+          Enter your User name and password
         </p>
         <form onSubmit={onSubmit} style={{ display: "grid", gap: "1rem" }}>
           <div>

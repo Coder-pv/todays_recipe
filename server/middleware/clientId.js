@@ -17,7 +17,7 @@ export function clientIdMiddleware(req, res, next) {
 export function requireDb(_req, res, next) {
   if (mongoose.connection.readyState !== 1) {
     return res.status(503).json({
-      error: "Database unavailable. Set MONGODB_URI in server/.env and start MongoDB.",
+      error: "Database unavailable. Verify MONGODB_URI, Atlas network access, and the server connection logs.",
     });
   }
   next();

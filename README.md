@@ -4,6 +4,8 @@ Today's Recipe is an AI-assisted meal planning platform that connects preference
 
 The core architectural goal was to treat AI as one service inside a product system, not as the system itself.
 
+**[Read the product and architecture case study](docs/CASE_STUDY.md)**
+
 ## Problem Statement
 
 Recipe generation is easy to demonstrate in isolation, but difficult to operationalize responsibly. A real meal planning product has to answer questions that a standalone chatbot does not:

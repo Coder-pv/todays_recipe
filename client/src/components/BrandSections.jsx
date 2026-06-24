@@ -1,19 +1,19 @@
 const reviews = [
   {
     title: "Finally, plans that stick",
-    body: "The dashboard and pantry sync made it easy to hit my calorie goals without guessing.",
+    body: "The dashboard and pantry sync made it easy to hit my calorie goals .",
     name: "Alex M.",
     date: "Mar 2026",
   },
   {
     title: "Love the daily flow",
-    body: "Breakfast through dinner suggestions feel balanced — and I can swap from the pantry anytime.",
+    body: "Breakfast through dinner suggestions feel balanced.",
     name: "Jordan K.",
     date: "Feb 2026",
   },
   {
     title: "Simple and motivating",
-    body: "Seeing weekly calories and what’s left in the pantry keeps me on track all week.",
+    body: "Now I can easily cook the meals with items from my pantry personalised suggestions.",
     name: "Sam R.",
     date: "Jan 2026",
   },
@@ -21,12 +21,12 @@ const reviews = [
 
 function StarRow() {
   return (
-    <div style={{ display: "flex", gap: 5, marginBottom: "0.65rem" }} aria-hidden>
+    <div className="review-stars" aria-label="5 out of 5 stars">
       {[1, 2, 3, 4, 5].map((i) => (
-        <svg key={i} width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg key={i} width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M12 2.5l2.8 6.9h7.4l-6 4.6 2.3 7-6.5-4.7-6.5 4.7 2.3-7-6-4.6h7.4L12 2.5z"
-            stroke="var(--color-border-subtle)"
+            stroke="currentColor"
             strokeWidth="1.35"
             strokeLinejoin="round"
           />
@@ -36,40 +36,10 @@ function StarRow() {
   );
 }
 
-export function BrandHero({ imageSrc = "/hero_banner.png" }) {
+export function BrandHero() {
   return (
-    <section
-      className="brand-hero"
-      style={{
-        position: "relative",
-        borderRadius: 16,
-        overflow: "hidden",
-        minHeight: 280,
-        marginBottom: "1.75rem",
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          backgroundImage: `url(${imageSrc})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center 40%",
-        }}
-      />
-      
-      <div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          minHeight: 280,
-          padding: "1.75rem 2rem",
-        }}
-      >
-      </div>
+    <section className="brand-hero" aria-label="recipeBook home banner">
+      <div className="brand-hero__content" aria-hidden="true" />
     </section>
   );
 }

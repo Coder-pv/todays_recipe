@@ -54,7 +54,7 @@ export default function AppLayout() {
               className="font-brand"
               style={{ fontSize: "1.35rem", color: "var(--color-brand)", letterSpacing: "-0.02em" }}
             >
-              Today&apos;s Recipe
+              recipeBook
             </span>
           </NavLink>
 
