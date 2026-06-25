@@ -44,7 +44,7 @@ export default function TodayPlan() {
   const completedCount = activeSlots.filter(({ key }) => plan?.[key]?.completed).length;
   const aiLabel =
     plan?.source === "stub"
-      ? "Template mode"
+      ? "Ready"
       : plan?.source === "openai"
         ? "OpenAI"
         : plan?.source === "openrouter"
@@ -56,7 +56,7 @@ export default function TodayPlan() {
       <section className="today-hero">
         <div className="today-hero__content">
           <div className="today-kicker">{aiLabel}</div>
-          <h1>Today&apos;s Plan</h1>
+          <h1>Your Today&apos;s Recipe</h1>
           <p>
             {date} - {servingPeople} {servingPeople === 1 ? "serving" : "servings"} - {activeSlots.length} planned
             meals

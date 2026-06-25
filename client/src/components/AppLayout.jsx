@@ -30,79 +30,42 @@ export default function AppLayout() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--color-page)" }}>
-      <header
-        className="app-header"
-        style={{
-          background: "var(--color-surface)",
-          padding: "1rem 1.25rem 0",
-        }}
-      >
+    <div className="app-shell">
+      <header className="app-header">
         <div style={{ maxWidth: 960, margin: "0 auto" }}>
           <NavLink
             to="/"
             end
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.65rem",
-              marginBottom: "0.85rem",
-            }}
+            className="app-brand"
           >
             <LogoMark size={44} />
-            <span
-              className="font-brand"
-              style={{ fontSize: "1.35rem", color: "var(--color-brand)", letterSpacing: "-0.02em" }}
-            >
+            <span className="font-brand">
               RecipeBook
             </span>
           </NavLink>
 
-          <nav
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "1.35rem",
-              alignItems: "center",
-              justifyContent: "space-between",
-              paddingBottom: "0.65rem",
-            }}
-          >
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "1.35rem", alignItems: "center" }}>
+          <nav className="app-nav">
+            <div className="app-nav__links">
               {nav.map(({ to, label, end }) => (
                 <NavLink key={to} to={to} className={navLinkClass} end={Boolean(end)}>
                   {label}
                 </NavLink>
               ))}
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", color: "var(--color-text-soft)" }}>
+            <div className="app-session">
               <span>{user?.username || "Signed in"}</span>
               <button
                 type="button"
                 onClick={onLogout}
-                style={{
-                  border: "1px solid var(--color-border)",
-                  background: "transparent",
-                  borderRadius: 999,
-                  padding: "0.45rem 0.9rem",
-                  cursor: "pointer",
-                  color: "var(--color-brown)",
-                }}
+                className="logout-button"
               >
                 Log out
               </button>
             </div>
           </nav>
         </div>
-        <div
-          style={{
-            height: 1,
-            background: "var(--color-border-subtle)",
-            maxWidth: "100%",
-          }}
-        />
       </header>
-      <main style={{ flex: 1, padding: "1.5rem 1.25rem 2.5rem" }}>
+      <main className="app-main">
         <div style={{ maxWidth: 960, margin: "0 auto" }}>
           <Outlet />
         </div>

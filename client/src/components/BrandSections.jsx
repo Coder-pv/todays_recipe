@@ -38,7 +38,7 @@ function StarRow() {
 
 export function BrandHero() {
   return (
-    <section className="brand-hero" aria-label="recipeBook home banner">
+    <section className="brand-hero" aria-label="RecipeBook home banner">
       <div className="brand-hero__content" aria-hidden="true" />
     </section>
   );
@@ -46,59 +46,23 @@ export function BrandHero() {
 
 export function UserReviewsSection() {
   return (
-    <section style={{ marginBottom: "1.75rem" }}>
-      <h2
-        className="font-sans-heading"
-        style={{
-          margin: "0 0 1.25rem",
-          fontSize: "1.35rem",
-          fontWeight: 700,
-          color: "var(--color-text-heading)",
-        }}
-      >
+    <section className="reviews-section">
+      <h2 className="font-sans-heading reviews-title">
         Hear from our Users
       </h2>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-          gap: "1rem",
-        }}
-      >
+      <div className="reviews-grid">
         {reviews.map((r, i) => (
-          <article
-            key={i}
-            style={{
-              background: "var(--color-surface)",
-              border: "1px solid var(--color-border-subtle)",
-              borderRadius: 12,
-              padding: "1.25rem",
-            }}
-          >
+          <article key={i} className="review-card">
             <StarRow />
-            <h3
-              className="font-sans-heading"
-              style={{ margin: "0 0 0.5rem", fontSize: "1rem", fontWeight: 700, color: "var(--color-text-heading)" }}
-            >
+            <h3 className="font-sans-heading">
               {r.title}
             </h3>
-            <p style={{ margin: "0 0 1rem", fontSize: "0.9rem", color: "var(--color-text-muted)", lineHeight: 1.45 }}>
-              {r.body}
-            </p>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.65rem" }}>
-              <div
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: "50%",
-                  background: "linear-gradient(135deg, var(--color-brand-soft) 0%, var(--color-brand) 100%)",
-                  flexShrink: 0,
-                }}
-                aria-hidden
-              />
+            <p>{r.body}</p>
+            <div className="review-author">
+              <div className="review-avatar" aria-hidden />
               <div>
-                <div style={{ fontSize: "0.88rem", fontWeight: 600, color: "var(--color-text-heading)" }}>{r.name}</div>
-                <div style={{ fontSize: "0.8rem", color: "var(--color-text-muted)" }}>{r.date}</div>
+                <div className="review-author__name">{r.name}</div>
+                <div className="review-author__date">{r.date}</div>
               </div>
             </div>
           </article>
