@@ -42,21 +42,11 @@ export default function TodayPlan() {
       : SLOTS.filter((slot) => ["breakfast", "lunch", "dinner"].includes(slot.key));
   const totalCalories = activeSlots.reduce((sum, { key }) => sum + (Number(plan?.[key]?.calories) || 0), 0);
   const completedCount = activeSlots.filter(({ key }) => plan?.[key]?.completed).length;
-  const aiLabel =
-    plan?.source === "stub"
-      ? "Ready"
-      : plan?.source === "openai"
-        ? "OpenAI"
-        : plan?.source === "openrouter"
-          ? "OpenRouter"
-          : "Ready";
 
   return (
     <div className="today-page">
       <section className="today-hero">
         <div className="today-hero__content">
-          <div className="today-kicker">{aiLabel}</div>
-          <h1>Your Today&apos;s Recipe</h1>
           <p>
             {date} - {servingPeople} {servingPeople === 1 ? "serving" : "servings"} - {activeSlots.length} planned
             meals

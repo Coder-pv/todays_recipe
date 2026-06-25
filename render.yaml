@@ -21,4 +21,6 @@ services:
       - key: OPENROUTER_API_KEY
         sync: false
       - key: OPENROUTER_MODEL
-        value: nex-agi/nex-n2-pro:free
+        value: nvidia/nemotron-3-ultra-550b-a55b:free
+      - key: OPENROUTER_FALLBACK_MODELS
+        value: nex-agi/nex-n2-pro

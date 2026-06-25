@@ -61,43 +61,56 @@ Rules:
 7) Calories are integers per person for each meal.`;
 
   try {
-    const r = await fetch(provider.endpoint, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${provider.apiKey}`,
-        "Content-Type": "application/json",
-        ...provider.extraHeaders,
-      },
-      body: JSON.stringify({
-        model: provider.model,
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: JSON.stringify(userPayload) },
-        ],
-      }),
-    });
+    const candidates = provider.models || [provider.model];
+    let lastFailure = null;
 
-    if (!r.ok) {
-      const errText = await r.text();
-      const detail = `LLM provider ${provider.name} failed with status ${r.status}.`;
-      console.warn(`${detail} Using stub instead.`, errText);
-      const meals = buildStubMealPlan(input);
-      return { meals, source: "stub", fallbackReason: detail };
+    for (const model of candidates) {
+      const r = await fetch(provider.endpoint, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${provider.apiKey}`,
+          "Content-Type": "application/json",
+          ...provider.extraHeaders,
+        },
+        body: JSON.stringify({
+          model,
+          temperature: 0.7,
+          max_tokens: 2600,
+          messages: [
+            { role: "system", content: system },
+            { role: "user", content: JSON.stringify(userPayload) },
+          ],
+        }),
+      });
+
+      if (!r.ok) {
+        const errText = await r.text();
+        lastFailure = { model, status: r.status, body: errText };
+        console.warn(`LLM provider ${provider.name} failed with status ${r.status} for model ${model}.`, errText);
+        continue;
+      }
+
+      const data = await r.json();
+      const rawContent = data.choices?.[0]?.message?.content;
+      const text = normalizeContent(rawContent);
+      let parsed;
+      try {
+        parsed = JSON.parse(text);
+      } catch {
+        lastFailure = { model, status: "invalid_json" };
+        console.warn(`LLM provider ${provider.name} returned invalid JSON for model ${model}.`);
+        continue;
+      }
+
+      const meals = normalizeAiMeals(parsed, input, availableSlots);
+      return { meals, source: provider.name };
     }
 
-    const data = await r.json();
-    const rawContent = data.choices?.[0]?.message?.content;
-    const text = normalizeContent(rawContent);
-    let parsed;
-    try {
-      parsed = JSON.parse(text);
-    } catch {
-      const meals = buildStubMealPlan(input);
-      return { meals, source: "stub", fallbackReason: `LLM provider ${provider.name} returned invalid JSON.` };
-    }
-
-    const meals = normalizeAiMeals(parsed, input, availableSlots);
-    return { meals, source: provider.name };
+    const detail = lastFailure
+      ? `LLM provider ${provider.name} failed for configured models. Last failure: ${lastFailure.model} (${lastFailure.status}).`
+      : `LLM provider ${provider.name} failed for configured models.`;
+    const meals = buildStubMealPlan(input);
+    return { meals, source: "stub", fallbackReason: detail };
   } catch (error) {
     const detail = `LLM provider ${provider.name} request failed.`;
     console.warn(`${detail} Using stub instead.`, error?.message || error);
@@ -108,11 +121,19 @@ Rules:
 
 function resolveProvider() {
   if (process.env.OPENROUTER_API_KEY) {
+    const configuredModel = process.env.OPENROUTER_MODEL;
+    const fallbackModels = (process.env.OPENROUTER_FALLBACK_MODELS || "nvidia/nemotron-3-ultra-550b-a55b:free,nex-agi/nex-n2-pro")
+      .split(",")
+      .map((model) => model.trim())
+      .filter(Boolean);
+    const models = [configuredModel, ...fallbackModels].filter(Boolean);
+
     return {
       name: "openrouter",
       apiKey: process.env.OPENROUTER_API_KEY,
       endpoint: process.env.OPENROUTER_API_URL || "https://openrouter.ai/api/v1/chat/completions",
-      model: process.env.OPENROUTER_MODEL || "nex-agi/nex-n2-pro:free",
+      model: configuredModel || fallbackModels[0],
+      models,
       extraHeaders: {
         "HTTP-Referer": process.env.OPENROUTER_SITE_URL || "http://localhost:5173",
         "X-Title": process.env.OPENROUTER_APP_NAME || "todays-recipe",
