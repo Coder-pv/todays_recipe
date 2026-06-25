@@ -9,7 +9,7 @@ import LogoMark from "./LogoMark.jsx";
 const nav = [
   { to: "/", label: "Home", end: true },
   { to: "/pantry", label: "Pantry" },
-  { to: "/today", label: "Today's Plan" },
+  { to: "/today", label: "Today's Recipe" },
   { to: "/profile", label: "Meal Preference" },
 ];
 
@@ -54,7 +54,7 @@ export default function AppLayout() {
               className="font-brand"
               style={{ fontSize: "1.35rem", color: "var(--color-brand)", letterSpacing: "-0.02em" }}
             >
-              recipeBook
+              RecipeBook
             </span>
           </NavLink>
 
