@@ -28,9 +28,6 @@ export default function Profile() {
   return (
     <Card>
       <h1 style={{ marginTop: 0 }}>Profile</h1>
-      <p style={{ color: "var(--color-text-soft)", marginTop: 0 }}>
-        Your preferences are stored in Redux on the client and saved against your signed-in account.
-      </p>
       <form onSubmit={onSave} style={{ display: "grid", gap: "1rem", maxWidth: 480 }}>
         <div>
           <label>Username</label>

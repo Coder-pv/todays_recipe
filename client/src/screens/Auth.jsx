@@ -24,22 +24,21 @@ export default function Auth() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: "1.5rem" }}>
-      <Card style={{ width: "100%", maxWidth: 420 }}>
-        <h1 style={{ marginTop: 0 }}>
+    <div className="auth-page">
+      <Card className="auth-card">
+        <h1>
           {auth.mode === "register" ? "Create your account" : "Sign in"}
         </h1>
-        <p style={{ color: "var(--color-text-soft)", marginTop: 0 }}>
+        <p className="auth-card__subtitle">
           Enter your User name and password
         </p>
-        <form onSubmit={onSubmit} style={{ display: "grid", gap: "1rem" }}>
+        <form onSubmit={onSubmit} className="auth-form">
           <div>
             <label htmlFor="username">Username</label>
             <input
               id="username"
               value={form.username}
               onChange={(event) => setForm((current) => ({ ...current, username: event.target.value }))}
-              style={{ width: "100%", marginTop: 4 }}
               autoComplete="username"
               required
             />
@@ -51,7 +50,6 @@ export default function Auth() {
               type="password"
               value={form.password}
               onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
-              style={{ width: "100%", marginTop: 4 }}
               autoComplete={auth.mode === "register" ? "new-password" : "current-password"}
               required
             />
@@ -64,24 +62,16 @@ export default function Auth() {
                 : "Sign in"}
           </Button>
           {auth.error ? (
-            <p role="alert" style={{ color: "var(--color-orange)", margin: 0 }}>
+            <p role="alert" className="auth-error">
               {auth.error}
             </p>
           ) : null}
         </form>
-        <div style={{ marginTop: "1rem", color: "var(--color-text-soft)" }}>
+        <div className="auth-switch">
           {auth.mode === "register" ? "Already have an account?" : "New here?"}{" "}
           <button
             type="button"
             onClick={() => dispatch(setAuthMode(auth.mode === "register" ? "login" : "register"))}
-            style={{
-              background: "none",
-              border: "none",
-              color: "var(--color-brown)",
-              cursor: "pointer",
-              fontWeight: 600,
-              padding: 0,
-            }}
           >
             {auth.mode === "register" ? "Sign in" : "Create an account"}
           </button>
