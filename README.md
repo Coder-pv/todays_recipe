@@ -1,8 +1,13 @@
-# Today's Recipe 🍽️
+### **RecipeBook 🍽️**
 
-> AI-powered meal planning that thinks ahead — recommending the right meal at the right time based on what's in your pantry, how you eat, and what your body needs.
+> **An AI-powered meal planner that thinks ahead — delivering the right meal at the right time based on your pantry, eating habits, goals, and nutritional needs.**
 
-Most recipe apps make you search. Today's Recipe inverts that. Tell it your preferences once, and it handles the rest — generating personalised daily meal plans, tracking what you've eaten, and keeping your pantry in sync automatically.
+Meal planning should feel effortless, not repetitive. **RecipeBook** creates a personalised food experience by understanding your preferences, available ingredients, and daily eating patterns.
+
+With a single setup, the app generates intelligent daily meal recommendations, suggests recipes using ingredients already in your pantry, tracks meals over time, and continuously adapts to your lifestyle.
+
+By combining **personalised recommendations, pantry awareness, and meal tracking**, **RecipeBook** transforms everyday food decisions into a seamless experience — making it easier to discover meals, stay consistent, and enjoy cooking without the daily planning overhead.
+
 
 ---
 
