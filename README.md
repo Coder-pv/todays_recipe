@@ -1,224 +1,176 @@
-# Today's Recipe
+# Today's Recipe 🍽️
 
-Today's Recipe is an AI-assisted meal planning platform that connects preference management, pantry inventory, recipe generation, and meal completion into a single full-stack workflow. I designed it as more than a prompt-to-recipe demo: the application models user identity, dietary constraints, serving requirements, pantry state, generated plans, fallback behavior, and operational health as separate system concerns.
+> AI-powered meal planning that thinks ahead — recommending the right meal at the right time based on what's in your pantry, how you eat, and what your body needs.
 
-The core architectural goal was to treat AI as one service inside a product system, not as the system itself.
+Most recipe apps make you search. Today's Recipe inverts that. Tell it your preferences once, and it handles the rest — generating personalised daily meal plans, tracking what you've eaten, and keeping your pantry in sync automatically.
 
-**[Read the product and architecture case study](docs/CASE_STUDY.md)**
+---
 
-## Problem Statement
+## Why I Built This
 
-Recipe generation is easy to demonstrate in isolation, but difficult to operationalize responsibly. A real meal planning product has to answer questions that a standalone chatbot does not:
+I wanted to go beyond a simple prompt-to-recipe demo and build something that treats AI as one service inside a real product system — with authentication, persistent state, inventory rules, graceful fallback, and deployment-ready configuration. This project reflects how I think about building: AI should enhance a product, not be the product.
 
-- Which user owns this profile, pantry, and meal plan?
-- What dietary rules must be enforced every time?
-- What ingredients are available now?
-- How many servings should be planned?
-- What inventory changes after a meal is marked complete?
-- What happens when the AI provider is unavailable or returns malformed output?
+---
 
-At enterprise scale, these are state management, ownership, resilience, and integration problems. The AI response is only one part of a larger workflow. Today's Recipe was built to explore that full boundary: recommendation generation supported by authenticated state, persistent inventory, deterministic fallback behavior, and deployable service separation.
+## Features
 
-## System Architecture
+- Personalised meal plans generated from dietary preferences, allergies, health goals, calorie targets, and pantry inventory
+- Pantry management with automatic ingredient deduction on meal completion — and restoration on undo
+- AI-generated recipes with ingredients and step-by-step cooking instructions
+- Deterministic fallback plans when AI is unavailable — the app always works
+- Dashboard with calorie tracking, pantry overview, and weekly consumption summary
+- Secure bearer-token authentication with protected routes throughout
+- Unit tested across auth, middleware, reducers, pantry logic, and meal math helpers
 
-I separated the application into three deployable concerns: browser client, API service, and managed data store.
+---
 
-```text
-Browser Client
-  React + Vite
-  - Authentication UI
-  - Pantry inventory workflow
-  - Meal preference workflow
-  - Generated recipe plan rendering
-  - Meal completion interactions
+## Tech Stack
 
-        |
-        | HTTPS / JSON
-        v
+| Layer            | Technology                                         |
+| ---------------- | -------------------------------------------------- |
+| Frontend         | React, Vite, React Router                          |
+| State Management | Custom Redux-like store with reducers and dispatch |
+| Styling          | Tailwind CSS                                       |
+| Charts           | Recharts                                           |
+| Backend          | Node.js, Express                                   |
+| Database         | MongoDB Atlas with Mongoose                        |
+| Authentication   | JWT bearer token flow                              |
+| AI Providers     | OpenRouter / OpenAI-compatible APIs                |
+| Testing          | Vitest, Supertest                                  |
+| Deployment       | Netlify · Render · AWS Amplify · Docker            |
 
-API Service
-  Node.js + Express
-  - CORS boundary
-  - Bearer token authentication
-  - MongoDB connection health
-  - Domain route orchestration
-  - AI provider integration
-  - Pantry deduction rules
+---
 
-        |
-        | Mongoose
-        v
+## Architecture
 
-MongoDB Atlas
-  - profiles
-  - pantryitems
-  - mealplans
+The app is split into four independent runtime concerns — frontend, backend, database, and AI provider — so each layer can be swapped, scaled, or deployed independently.
+
+```
+React + Vite (Netlify / Amplify)
+  └── calls Express API via VITE_API_BASE_URL
+
+Node.js + Express (Render / Docker)
+  ├── owns auth, domain rules, pantry mutation, and AI orchestration
+  ├── talks to MongoDB Atlas
+  └── calls OpenRouter or OpenAI for meal generation
+         └── falls back to local deterministic generator if unavailable
 ```
 
-The runtime deployment is cloud-portable. The client can be hosted as static assets on Netlify, AWS Amplify, or a similar static host. The API can run on Render, AWS App Runner, EC2, or another Node-compatible service. MongoDB Atlas is used as the managed persistence layer.
+**Key design decisions:**
 
-```text
-Netlify / Static Hosting
-  VITE_API_BASE_URL -> API URL
+- **AI as a replaceable service** — the backend owns validation, persistence, and fallback. The AI provider only generates structured suggestions.
+- **Durable meal plans** — generated plans are saved in MongoDB, not treated as temporary text. Completion state, pantry snapshots, and plan history are all persistent.
+- **Inventory-aware workflow** — completing a meal deducts pantry quantities and stores a snapshot. Undoing completion restores inventory from that snapshot.
+- **Graceful degradation** — if no AI key is configured or the provider fails, a local fallback plan is returned. The app is always demoable.
 
-Render / Node Hosting
-  MONGODB_URI       -> MongoDB Atlas
-  CLIENT_ORIGIN     -> allowed frontend domain
-  JWT_SECRET        -> token signing
-  OPENROUTER_API_KEY / OPENAI_API_KEY -> AI provider
+---
 
-MongoDB Atlas
-  Hosted operational data
-```
+## Getting Started
 
-## Design Decisions
-
-I kept the frontend and backend independently deployable. The client does not assume that the API is on localhost; it reads `VITE_API_BASE_URL` at build time. The backend reads deployment-specific values such as `MONGODB_URI`, `CLIENT_ORIGIN`, `JWT_SECRET`, and AI keys from environment variables. This makes the same codebase usable locally, on Netlify and Render, or on AWS-backed infrastructure.
-
-I kept database access server-side only. The browser never receives the MongoDB connection string or any direct persistence credentials. This keeps the API as the policy enforcement layer for authentication, ownership, validation, and future authorization rules.
-
-I modeled recipe display separately from inventory operations. A generated meal stores `recipeIngredients` and `steps` for user-facing cooking instructions, while `ingredientsUsed` represents pantry deduction candidates. That distinction matters because a recipe can mention complete instructions while inventory operations require stricter, smaller, normalized quantities.
-
-I designed the AI integration defensively. The model is asked to return strict JSON, but the server still normalizes the response before persistence. Missing fields are filled from deterministic fallback data, disabled meal slots are respected, and invalid provider output does not break the user workflow.
-
-I preserved deterministic fallback behavior. If the AI provider fails, the application still returns a usable plan with `source: "stub"` and a `fallbackReason`. This is an architectural choice: the user should understand degraded mode instead of seeing a silent failure or blank state.
-
-## Core Domain Model
-
-The main entities are:
-
-- `Profile`: user-owned dietary settings, calorie target, meal pattern, and serving defaults.
-- `PantryItem`: user-owned inventory item with quantity and unit.
-- `MealPlan`: date-specific generated plan containing meals, instructions, source metadata, and completion state.
-
-The `MealPlan` document is intentionally richer than a simple AI response. It stores:
-
-- available meal slots
-- meal titles and descriptions
-- calories
-- full recipe ingredients
-- step-by-step method
-- pantry deduction candidates
-- meal completion state
-- AI source and fallback reason
-
-This lets the app preserve the generated plan as durable product state rather than treating it as transient chat text.
-
-## AI Integration
-
-AI is used as a constrained planning service, not as a general chatbot.
-
-The AI service receives structured context:
-
-- dietary preference
-- allergies
-- health goal
-- daily calorie target
-- meal cadence
-- serving count
-- pantry items
-- allowed meal slots
-
-The AI service returns structured meal objects:
-
-- title
-- summary description
-- calories
-- complete ingredient list
-- ordered cooking steps
-- pantry usage estimates
-
-The backend then normalizes and persists the result. This keeps the AI provider replaceable and prevents the model from becoming the authority for identity, ownership, persistence, or pantry mutation.
-
-## Failure Scenarios
-
-AI provider unavailable:
-The API returns a deterministic fallback meal plan and records the fallback reason. The user can continue using the app while the system remains transparent about degraded mode.
-
-AI provider returns invalid JSON:
-The response is rejected at the normalization boundary. The persisted meal plan still follows the expected schema.
-
-MongoDB unavailable:
-The health endpoint exposes DB connection state, and DB-dependent routes are guarded so the system fails before partial domain operations are attempted.
-
-Incorrect frontend/backend origin:
-The CORS layer prevents unapproved browser origins from calling the API. In development, localhost ports are flexible; in production, the frontend origin is explicitly configured.
-
-Missing production JWT secret:
-The API fails fast instead of silently using a development token signing secret.
-
-Meal completion and pantry deduction drift:
-The current implementation updates pantry state in application logic. A production-grade version should wrap meal completion and pantry mutations in database transactions.
-
-## Tradeoffs
-
-I used a custom lightweight JWT implementation to keep the project self-contained. For a production enterprise system, I would replace this with a managed identity provider such as Cognito, Auth0, or an internal SSO platform.
-
-I used MongoDB Atlas rather than self-hosted MongoDB. This reduces operational complexity around backups, patching, replication, and connectivity. The tradeoff is reliance on a managed external database provider.
-
-I used JSON-based LLM orchestration instead of fine-tuning or complex agent workflows. This is portable across OpenRouter and OpenAI-compatible providers, but it requires defensive normalization because model output cannot be trusted blindly.
-
-I kept the backend as a traditional Express API. Serverless functions could reduce idle cost, but an API service better reflects the stateful domain orchestration and makes the backend easier to reason about during development.
-
-I chose simple deployment primitives over full infrastructure-as-code. The repository contains Netlify and Render configuration for repeatable deployment, while leaving room to evolve into Terraform/CDK if the system grows.
-
-## Deployment Architecture
-
-The application is designed to run in a low-friction hosted setup:
-
-```text
-Frontend: Netlify
-Backend: Render
-Database: MongoDB Atlas
-AI Provider: OpenRouter or OpenAI-compatible API
-```
-
-The same architecture can also be expressed with AWS services:
-
-```text
-Frontend: AWS Amplify or S3 + CloudFront
-Backend: EC2, App Runner, or ECS
-Database: MongoDB Atlas
-Observability: CloudWatch
-Secrets: AWS Parameter Store or Secrets Manager
-```
-
-I kept the code environment-driven so the hosting provider can change without rewriting the application.
-
-## Production Improvements
-
-In a production implementation, I would prioritize the following improvements:
-
-- Replace custom JWT handling with managed identity and refresh-token lifecycle.
-- Add request validation with a schema validator such as Zod or Joi.
-- Add MongoDB transactions around meal completion and pantry deduction.
-- Add rate limiting and abuse protection around AI generation endpoints.
-- Move provider secrets to a managed secret store.
-- Add structured logs, request IDs, provider latency metrics, and fallback-rate monitoring.
-- Add CI/CD checks for tests, build validation, dependency scanning, and container scanning.
-- Add tenant-aware data modeling for organization-level isolation.
-- Add asynchronous generation for longer-running AI requests.
-- Add a provider abstraction capable of retries, model fallback, and cost-aware routing.
-
-## Repository Notes
-
-The repository includes deployment support files:
-
-- `netlify.toml` for the Vite frontend.
-- `render.yaml` for the Express backend.
-- `amplify.yml` and `server/Dockerfile` for an optional AWS/container deployment path.
-- `.env.example` files for documenting required runtime configuration without committing secrets.
-
-Environment variables are intentionally excluded from source control. The `.gitignore` excludes `.env`, `node_modules`, build output, and log files.
-
-## Local Validation
-
-The project includes focused unit tests for server middleware, authentication utilities, pantry deduction logic, client state reducers, and meal math helpers. The current validation flow is:
+### 1. Install dependencies
 
 ```bash
-npm run build --prefix client
-npm test --prefix server
-npm test --prefix client
+npm run install:all
 ```
 
-These checks verify that the deployable client builds successfully and that the main domain/state logic remains stable.
+### 2. Configure environment variables
+
+**Server** (`server/.env`):
+
+```env
+MONGODB_URI=mongodb+srv://...
+JWT_SECRET=your-secret
+CLIENT_ORIGIN=http://localhost:5173
+OPENROUTER_API_KEY=optional
+OPENAI_API_KEY=optional
+PORT=5000
+```
+
+**Client** (`client/.env`):
+
+```env
+VITE_API_BASE_URL=http://localhost:5000
+```
+
+### 3. Run the app
+
+```bash
+npm run dev
+```
+
+| Service  | URL                   |
+| -------- | --------------------- |
+| Frontend | http://localhost:5173 |
+| Backend  | http://localhost:5000 |
+
+---
+
+## API Reference
+
+All protected routes require `Authorization: Bearer <token>`.
+
+| Method | Endpoint                      | Description                 |
+| ------ | ----------------------------- | --------------------------- |
+| POST   | `/api/auth/register`          | Create account              |
+| POST   | `/api/auth/login`             | Login and receive token     |
+| GET    | `/api/profile`                | Get profile and preferences |
+| PUT    | `/api/profile`                | Update profile              |
+| GET    | `/api/pantry`                 | List pantry items           |
+| POST   | `/api/pantry`                 | Add pantry item             |
+| PATCH  | `/api/pantry/:id`             | Update pantry item          |
+| DELETE | `/api/pantry/:id`             | Remove pantry item          |
+| POST   | `/api/plans/generate`         | Generate a meal plan        |
+| GET    | `/api/plans?date=YYYY-MM-DD`  | Get plan for a date         |
+| PATCH  | `/api/plans/:date/meal/:slot` | Complete or undo a meal     |
+| GET    | `/api/dashboard`              | Calorie and pantry summary  |
+| GET    | `/api/highlights`             | Popular and recent recipes  |
+| GET    | `/health`                     | API and database status     |
+
+---
+
+## Testing
+
+```bash
+# All tests
+npm test
+
+# Server only
+npm run test --prefix server
+
+# Client only
+npm run test --prefix client
+```
+
+Coverage includes: auth utilities, auth middleware, pantry deduction logic, client reducers, and meal math helpers.
+
+---
+
+## Deployment
+
+| Service  | Provider               |
+| -------- | ---------------------- |
+| Frontend | Netlify or AWS Amplify |
+| Backend  | Render or Docker       |
+| Database | MongoDB Atlas          |
+| AI       | OpenRouter or OpenAI   |
+
+Config files included: `netlify.toml`, `render.yaml`, `amplify.yml`, `server/Dockerfile`.
+
+---
+
+## What's Next
+
+- Swap custom auth for Auth0, Cognito, or Clerk
+- Add shopping list generation from missing pantry ingredients
+- Add nutrition macros beyond calories
+- Add recipe favourites and meal history
+- Add rate limiting on auth and AI generation endpoints
+- CI/CD pipeline with lint, test, build, and deployment validation
+
+---
+
+## About
+
+Built by a full-stack developer who believes AI should be one well-integrated service inside a thoughtfully engineered product — not a demo wrapper around a prompt.
+
+> Stack: React · Vite · Node.js · Express · MongoDB · JWT · Tailwind CSS · Recharts · OpenRouter · Vitest
