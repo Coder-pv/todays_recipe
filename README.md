@@ -4,28 +4,23 @@
 
 Meal planning should feel effortless, not repetitive. **RecipeBook** creates a personalised food experience by understanding your preferences, available ingredients, and daily eating patterns.
 
-With a single setup, the app generates intelligent daily meal recommendations, suggests recipes using ingredients already in your pantry, tracks meals over time, and continuously adapts to your lifestyle.
-
-By combining **personalised recommendations, pantry awareness, and meal tracking**, **RecipeBook** transforms everyday food decisions into a seamless experience — making it easier to discover meals, stay consistent, and enjoy cooking without the daily planning overhead.
-
-
 ---
 
 ## Why I Built This
 
-I wanted to go beyond a simple prompt-to-recipe demo and build something that treats AI as one service inside a real product system — with authentication, persistent state, inventory rules, graceful fallback, and deployment-ready configuration. This project reflects how I think about building: AI should enhance a product, not be the product.
+I built RecipeBook from a problem I faced myself — every day I was spending too much time deciding what to cook. I would keep opening AI tools, typing pantry ingredients, dietary preferences, allergies, calorie goals, and asking for meal ideas again and again. The process worked, but repeating it every day became tiring.
+
+So I built RecipeBook — an AI-powered meal planning assistant that remembers preferences, understands what’s available in the pantry, and recommends personalised meals automatically. Instead of searching and prompting every day, users can generate meal plans, discover recipes, and track meals with a single click.
 
 ---
 
 ## Features
 
-- Personalised meal plans generated from dietary preferences, allergies, health goals, calorie targets, and pantry inventory
-- Pantry management with automatic ingredient deduction on meal completion — and restoration on undo
-- AI-generated recipes with ingredients and step-by-step cooking instructions
-- Deterministic fallback plans when AI is unavailable — the app always works
-- Dashboard with calorie tracking, pantry overview, and weekly consumption summary
 - Secure bearer-token authentication with protected routes throughout
-- Unit tested across auth, middleware, reducers, pantry logic, and meal math helpers
+- Dashboard with calorie tracking, pantry overview, and weekly consumption summary
+- Personalised meal plans generated from dietary preferences, allergies, health goals, calorie targets, and pantry inventory
+- Pantry management with automatic ingredient deduction on meal completion
+- AI-generated recipes with ingredients and step-by-step cooking instructions
 
 ---
 
@@ -42,7 +37,7 @@ I wanted to go beyond a simple prompt-to-recipe demo and build something that tr
 | Authentication   | JWT bearer token flow                              |
 | AI Providers     | OpenRouter / OpenAI-compatible APIs                |
 | Testing          | Vitest, Supertest                                  |
-| Deployment       | Netlify, Render                                    |
+| Deployment       | Netlify · Render                                   |
 
 ---
 
@@ -50,16 +45,7 @@ I wanted to go beyond a simple prompt-to-recipe demo and build something that tr
 
 The app is split into four independent runtime concerns — frontend, backend, database, and AI provider — so each layer can be swapped, scaled, or deployed independently.
 
-```
-React + Vite (Netlify)
-  └── calls Express API via VITE_API_BASE_URL
-
-Node.js + Express (Render)
-  ├── owns auth, domain rules, pantry mutation, and AI orchestration
-  ├── talks to MongoDB Atlas
-  └── calls OpenRouter or OpenAI for meal generation
-         └── falls back to local deterministic generator if unavailable
-```
+````
 
 **Key design decisions:**
 
@@ -76,7 +62,7 @@ Node.js + Express (Render)
 
 ```bash
 npm run install:all
-```
+````
 
 ### 2. Configure environment variables
 
@@ -152,12 +138,12 @@ Coverage includes: auth utilities, auth middleware, pantry deduction logic, clie
 
 ## Deployment
 
-| Service  | Provider               |
-| -------- | ---------------------- |
-| Frontend | Netlify                |
-| Backend  | Render                 |
-| Database | MongoDB Atlas          |
-| AI       | OpenRouter or OpenAI   |
+| Service  | Provider             |
+| -------- | -------------------- |
+| Frontend | Netlify              |
+| Backend  | Render               |
+| Database | MongoDB Atlas        |
+| AI       | OpenRouter or OpenAI |
 
 Config files included: `netlify.toml`, `render.yaml`.
 
