@@ -100,7 +100,7 @@ Config files included: `netlify.toml`, `render.yaml`.
 
 ---
 
-## AI Roadmap
+## Feature Roadmap
 
 - Add image-based pantry item capture so users can upload a pantry/fridge photo and auto-detect ingredients.
 - Add document extraction for personal recipe uploads, then learn recurring ingredients, cuisines, and cooking patterns from the user's own recipes.
@@ -108,9 +108,5 @@ Config files included: `netlify.toml`, `render.yaml`.
 - Add shopping-list generation for missing ingredients and substitution suggestions when pantry items are low.
 
 ---
-
-## About
-
-Built as a full-stack AI meal-planning app focused on pantry-aware recommendations, persistent user state, and practical AI fallback behavior.
 
 > Stack: React / Vite / Node.js / Express / MongoDB / JWT / Recharts / OpenRouter / Vitest
