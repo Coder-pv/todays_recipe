@@ -45,124 +45,74 @@ So I built RecipeBook — an AI-powered meal planning assistant that remembers p
 
 ![RecipeBook architecture](docs/images/architecture.png)
 
-The app is split into four independent runtime concerns — frontend, backend, database, and AI provider — so each layer can be swapped, scaled, or deployed independently.
+The diagram shows how RecipeBook is deployed and how data flows through the system:
 
-
-**Key design decisions:**
-
-- **AI as a replaceable service** — the backend owns validation, persistence, and fallback. The AI provider only generates structured suggestions.
-- **Durable meal plans** — generated plans are saved in MongoDB, not treated as temporary text. Completion state, pantry snapshots, and plan history are all persistent.
-- **Inventory-aware workflow** — completing a meal deducts pantry quantities and stores a snapshot. Undoing completion restores inventory from that snapshot.
-- **Graceful degradation** — if no AI key is configured or the provider fails, a local fallback plan is returned. The app is always demoable.
+- Users interact with the React/Vite frontend hosted on Netlify.
+- The frontend calls the Node.js/Express backend hosted on Render through API requests.
+- The backend handles authentication, profile data, pantry logic, meal-plan generation, and meal completion updates.
+- MongoDB Atlas stores users, preferences, pantry items, generated meal plans, and completion history.
+- OpenRouter AI is called by the backend to generate recipe suggestions.
 
 ---
 
-## Getting Started
-
-### 1. Install dependencies
+## Run Locally
 
 ```bash
 npm run install:all
-```
-
-### 2. Configure environment variables
-
-**Server** (`server/.env`):
-
-```env
-MONGODB_URI=mongodb+srv://...
-JWT_SECRET=your-secret
-CLIENT_ORIGIN=http://localhost:5173
-OPENROUTER_API_KEY=optional
-OPENAI_API_KEY=optional
-PORT=5000
-```
-
-**Client** (`client/.env`):
-
-```env
-VITE_API_BASE_URL=http://localhost:5000
-```
-
-### 3. Run the app
-
-```bash
 npm run dev
 ```
 
-| Service  | URL                   |
-| -------- | --------------------- |
-| Frontend | http://localhost:5173 |
-| Backend  | http://localhost:5000 |
+Required environment:
+
+- `server/.env`: `MONGODB_URI`, `JWT_SECRET`, `CLIENT_ORIGIN`, optional `OPENROUTER_API_KEY` or `OPENAI_API_KEY`
+- `client/.env`: `VITE_API_BASE_URL`
 
 ---
 
-## API Reference
+## Core API
 
-All protected routes require `Authorization: Bearer <token>`.
+Protected routes use `Authorization: Bearer <token>`.
 
-| Method | Endpoint                      | Description                 |
-| ------ | ----------------------------- | --------------------------- |
-| POST   | `/api/auth/register`          | Create account              |
-| POST   | `/api/auth/login`             | Login and receive token     |
-| GET    | `/api/profile`                | Get profile and preferences |
-| PUT    | `/api/profile`                | Update profile              |
-| GET    | `/api/pantry`                 | List pantry items           |
-| POST   | `/api/pantry`                 | Add pantry item             |
-| PATCH  | `/api/pantry/:id`             | Update pantry item          |
-| DELETE | `/api/pantry/:id`             | Remove pantry item          |
-| POST   | `/api/plans/generate`         | Generate a meal plan        |
-| GET    | `/api/plans?date=YYYY-MM-DD`  | Get plan for a date         |
-| PATCH  | `/api/plans/:date/meal/:slot` | Complete or undo a meal     |
-| GET    | `/api/dashboard`              | Calorie and pantry summary  |
-| GET    | `/api/highlights`             | Popular and recent recipes  |
-| GET    | `/health`                     | API and database status     |
+- Auth: register, login, current user
+- Profile: dietary preferences, allergies, health goals, meal pattern, serving size
+- Pantry: add, update, remove, and list ingredients
+- Plans: generate daily meal plans and complete/undo meals
+- Dashboard: calorie summary, pantry snapshot, and weekly consumption
 
 ---
 
 ## Testing
 
 ```bash
-# All tests
 npm test
-
-# Server only
-npm run test --prefix server
-
-# Client only
-npm run test --prefix client
 ```
 
-Coverage includes: auth utilities, auth middleware, pantry deduction logic, client reducers, and meal math helpers.
+Vitest and Supertest cover auth utilities, auth middleware, pantry deduction logic, client reducers, and meal math helpers.
 
 ---
 
 ## Deployment
 
-| Service  | Provider             |
-| -------- | -------------------- |
-| Frontend | Netlify              |
-| Backend  | Render               |
-| Database | MongoDB Atlas        |
-| AI       | OpenRouter or OpenAI |
+- Frontend: Netlify
+- Backend: Render
+- Database: MongoDB Atlas
+- AI Provider: OpenRouter / OpenAI-compatible API
 
 Config files included: `netlify.toml`, `render.yaml`.
 
 ---
 
-## What's Next
+## AI Roadmap
 
-- Swap custom auth for Auth0, Cognito, or Clerk
-- Add shopping list generation from missing pantry ingredients
-- Add nutrition macros beyond calories
-- Add recipe favourites and meal history
-- Add rate limiting on auth and AI generation endpoints
-- CI/CD pipeline with lint, test, build, and deployment validation
+- Add image-based pantry item capture so users can upload a pantry/fridge photo and auto-detect ingredients.
+- Add document extraction for personal recipe uploads, then learn recurring ingredients, cuisines, and cooking patterns from the user's own recipes.
+- Build a smarter recommendation layer that combines pantry inventory, nutrition goals, recipe history, and user feedback.
+- Add shopping-list generation for missing ingredients and substitution suggestions when pantry items are low.
 
 ---
 
 ## About
 
-Built by a full-stack developer who believes AI should be one well-integrated service inside a thoughtfully engineered product — not a demo wrapper around a prompt.
+Built as a full-stack AI meal-planning app focused on pantry-aware recommendations, persistent user state, and practical AI fallback behavior.
 
-> Stack: React · Vite · Node.js · Express · MongoDB · JWT · Tailwind CSS · Recharts · OpenRouter · Vitest
+> Stack: React / Vite / Node.js / Express / MongoDB / JWT / Recharts / OpenRouter / Vitest
