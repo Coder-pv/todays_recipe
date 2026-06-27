@@ -2,8 +2,6 @@
 
 > **An AI-powered meal planner that thinks ahead — delivering the right meal at the right time based on your pantry, eating habits, goals, and nutritional needs.**
 
-Meal planning should feel effortless, not repetitive. **RecipeBook** creates a personalised food experience by understanding your preferences, available ingredients, and daily eating patterns.
-
 ---
 
 ## Why I Built This
@@ -64,7 +62,7 @@ npm run dev
 
 Required environment:
 
-- `server/.env`: `MONGODB_URI`, `JWT_SECRET`, `CLIENT_ORIGIN`, optional `OPENROUTER_API_KEY` or `OPENAI_API_KEY`
+- `server/.env`: `MONGODB_URI`, `JWT_SECRET`, `CLIENT_ORIGIN`, `OPENROUTER_API_KEY`
 - `client/.env`: `VITE_API_BASE_URL`
 
 ---
