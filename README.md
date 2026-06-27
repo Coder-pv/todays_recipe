@@ -28,7 +28,7 @@ So I built RecipeBook — an AI-powered meal planning assistant that remembers p
 | ---------------- | -------------------------------------------------- |
 | Frontend         | React, Vite, React Router                          |
 | State Management | Custom Redux-like store with reducers and dispatch |
-| Styling          | Tailwind CSS                                       |
+| Styling          | Custom CSS                                         |
 | Charts           | Recharts                                           |
 | Backend          | Node.js, Express                                   |
 | Database         | MongoDB Atlas with Mongoose                        |
@@ -114,3 +114,9 @@ Config files included: `netlify.toml`, `render.yaml`.
 Built as a full-stack AI meal-planning app focused on pantry-aware recommendations, persistent user state, and practical AI fallback behavior.
 
 > Stack: React / Vite / Node.js / Express / MongoDB / JWT / Recharts / OpenRouter / Vitest
+
+---
+
+## License
+
+Source available for portfolio review. All rights reserved. Reuse, redistribution, or derivative use is not permitted without written permission.
