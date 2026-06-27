@@ -4,7 +4,7 @@ import { PantryItem } from "../models/PantryItem.js";
 import { MealPlan } from "../models/MealPlan.js";
 import { requireDb } from "../middleware/clientId.js";
 import { requireAuth } from "../middleware/auth.js";
-import { generateMealPlan } from "../services/mealPlanAI.js";
+import { generateMealPlan, sanitizeMealPlanForPantry } from "../services/mealPlanAI.js";
 import { applyPantryDeductions, normalizeName } from "../utils/pantryDeduct.js";
 
 const router = Router();
@@ -31,6 +31,17 @@ function emptySlot() {
   };
 }
 
+function applyAvailableSlots(plan, availableSlots) {
+  const out = plan?.toObject ? plan.toObject() : { ...plan };
+  out.availableSlots = availableSlots;
+  for (const slot of SLOTS) {
+    if (!availableSlots.includes(slot)) {
+      out[slot] = emptySlot();
+    }
+  }
+  return out;
+}
+
 function resolveSlots(profile) {
   const pattern = profile?.mealPattern;
   if (pattern === "breakfast_lunch_snacks_dinner") return ["breakfast", "lunch", "snacks", "dinner"];
@@ -42,9 +53,11 @@ function resolveSlots(profile) {
 router.get("/", async (req, res, next) => {
   try {
     const date = (req.query.date && String(req.query.date)) || todayKey();
+    const profile = await Profile.findOne({ userId: req.auth.sub });
+    const availableSlots = resolveSlots(profile);
+    const pantryItems = await PantryItem.find({ userId: req.auth.sub }).lean();
     const plan = await MealPlan.findOne({ userId: req.auth.sub, date }).lean();
     if (!plan) {
-      const profile = await Profile.findOne({ userId: req.auth.sub });
       return res.json({
         date,
         servingPeople: profile?.defaultServingPeople || 2,
@@ -53,12 +66,12 @@ router.get("/", async (req, res, next) => {
         snacks: emptySlot(),
         dinner: emptySlot(),
         mealOfTheDay: emptySlot(),
-        availableSlots: resolveSlots(profile),
+        availableSlots,
         generatedAt: null,
         source: null,
       });
     }
-    res.json(plan);
+    res.json(sanitizeMealPlanForPantry(applyAvailableSlots(plan, availableSlots), pantryItems));
   } catch (e) {
     next(e);
   }
@@ -72,6 +85,7 @@ async function runGenerate(req, date, servingPeople) {
     throw error;
   }
   const sp = Math.max(1, Number(servingPeople) || profile.defaultServingPeople || 2);
+  const availableSlots = resolveSlots(profile);
   const pantryItems = await PantryItem.find({ userId: req.auth.sub }).lean();
   const { meals, source, fallbackReason } = await generateMealPlan({
     profile: profile.toObject ? profile.toObject() : profile,
@@ -89,7 +103,7 @@ async function runGenerate(req, date, servingPeople) {
     snacks: { ...(meals.snacks || emptySlot()), completed: false, deductedSnapshot: [] },
     dinner: { ...(meals.dinner || emptySlot()), completed: false, deductedSnapshot: [] },
     mealOfTheDay: { ...(meals.mealOfTheDay || emptySlot()), completed: false, deductedSnapshot: [] },
-    availableSlots: meals.availableSlots || ["breakfast", "lunch", "dinner"],
+    availableSlots,
     generatedAt: new Date(),
     source,
     fallbackReason: fallbackReason || "",

@@ -42,7 +42,7 @@ I wanted to go beyond a simple prompt-to-recipe demo and build something that tr
 | Authentication   | JWT bearer token flow                              |
 | AI Providers     | OpenRouter / OpenAI-compatible APIs                |
 | Testing          | Vitest, Supertest                                  |
-| Deployment       | Netlify · Render · AWS Amplify · Docker            |
+| Deployment       | Netlify, Render                                    |
 
 ---
 
@@ -51,10 +51,10 @@ I wanted to go beyond a simple prompt-to-recipe demo and build something that tr
 The app is split into four independent runtime concerns — frontend, backend, database, and AI provider — so each layer can be swapped, scaled, or deployed independently.
 
 ```
-React + Vite (Netlify / Amplify)
+React + Vite (Netlify)
   └── calls Express API via VITE_API_BASE_URL
 
-Node.js + Express (Render / Docker)
+Node.js + Express (Render)
   ├── owns auth, domain rules, pantry mutation, and AI orchestration
   ├── talks to MongoDB Atlas
   └── calls OpenRouter or OpenAI for meal generation
@@ -154,12 +154,12 @@ Coverage includes: auth utilities, auth middleware, pantry deduction logic, clie
 
 | Service  | Provider               |
 | -------- | ---------------------- |
-| Frontend | Netlify or AWS Amplify |
-| Backend  | Render or Docker       |
+| Frontend | Netlify                |
+| Backend  | Render                 |
 | Database | MongoDB Atlas          |
 | AI       | OpenRouter or OpenAI   |
 
-Config files included: `netlify.toml`, `render.yaml`, `amplify.yml`, `server/Dockerfile`.
+Config files included: `netlify.toml`, `render.yaml`.
 
 ---
 

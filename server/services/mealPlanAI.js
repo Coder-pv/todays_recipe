@@ -46,6 +46,7 @@ export async function generateMealPlan(input) {
       includeMealCount: true,
       includeWeightPreference: true,
       includeServingPeople: true,
+      pantryOnly: true,
     },
   };
 
@@ -53,12 +54,14 @@ export async function generateMealPlan(input) {
 {"availableSlots":["breakfast|lunch|snacks|dinner|mealOfTheDay"],"breakfast":{"title":"string","description":"string","calories":number,"recipeIngredients":[{"name":"string","quantity":"string","unit":"string"}],"steps":["string"],"ingredientsUsed":[{"name":"string","quantity":number}]},"lunch":{"title":"string","description":"string","calories":number,"recipeIngredients":[{"name":"string","quantity":"string","unit":"string"}],"steps":["string"],"ingredientsUsed":[{"name":"string","quantity":number}]},"snacks":{"title":"string","description":"string","calories":number,"recipeIngredients":[{"name":"string","quantity":"string","unit":"string"}],"steps":["string"],"ingredientsUsed":[{"name":"string","quantity":number}]},"dinner":{"title":"string","description":"string","calories":number,"recipeIngredients":[{"name":"string","quantity":"string","unit":"string"}],"steps":["string"],"ingredientsUsed":[{"name":"string","quantity":number}]},"mealOfTheDay":{"title":"string","description":"string","calories":number,"recipeIngredients":[{"name":"string","quantity":"string","unit":"string"}],"steps":["string"],"ingredientsUsed":[{"name":"string","quantity":number}]}}
 Rules:
 1) Use ONLY slots listed in availableSlots from user payload for real meals; keep other slots empty.
-2) Completely exclude allergy ingredients.
-3) Mention calorie target, meals per day, health goal, and servingPeople in descriptions naturally.
-4) recipeIngredients must contain the complete ingredient list for the recipe with clear amounts and units.
-5) steps must contain 5 to 8 practical, ordered cooking instructions.
-6) Quantities in ingredientsUsed are pantry amounts to consume.
-7) Calories are integers per person for each meal.`;
+2) Suggest meals using ONLY pantryItems from user payload. Do not invent recipe ingredients that are not in pantryItems.
+3) Meal titles must be based on the pantry ingredients, for example "Brinjal Paneer Stir Fry" when pantry has brinjal and paneer.
+4) Completely exclude allergy ingredients.
+5) Mention calorie target, meals per day, health goal, and servingPeople in descriptions naturally.
+6) recipeIngredients must contain only pantryItems with clear amounts and units.
+7) steps must contain 5 to 8 practical, ordered cooking instructions.
+8) Quantities in ingredientsUsed are pantry amounts to consume.
+9) Calories are integers per person for each meal.`;
 
   try {
     const candidates = provider.models || [provider.model];
@@ -157,6 +160,8 @@ function resolveProvider() {
 function normalizeAiMeals(parsed, input, availableSlots) {
   const slots = ["breakfast", "lunch", "snacks", "dinner", "mealOfTheDay"];
   const fallback = buildStubMealPlan(input);
+  const pantryItems = Array.isArray(input.pantryItems) ? input.pantryItems : [];
+  const pantryNames = pantryItems.map((item) => String(item.name || "").trim()).filter(Boolean);
   const out = { availableSlots };
   for (const slot of slots) {
     const m = parsed?.[slot];
@@ -168,7 +173,9 @@ function normalizeAiMeals(parsed, input, availableSlots) {
       out[slot] = fallback[slot];
       continue;
     }
-    out[slot] = {
+    out[slot] = normalizeMealForPantry({
+      slot,
+      meal: {
       title: String(m.title || fallback[slot].title),
       description: String(m.description || fallback[slot].description),
       calories: Math.max(0, Math.round(Number(m.calories) || fallback[slot].calories)),
@@ -182,8 +189,100 @@ function normalizeAiMeals(parsed, input, availableSlots) {
               quantity: Math.max(0, Number(x.quantity) || 0),
             }))
         : fallback[slot].ingredientsUsed,
+      },
+      fallback: fallback[slot],
+      pantryNames,
+    });
+  }
+  return out;
+}
+
+function normalizeName(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function matchesPantry(name, pantryNames) {
+  const wanted = normalizeName(name);
+  return pantryNames.some((pantryName) => {
+    const pantry = normalizeName(pantryName);
+    return wanted === pantry || wanted.includes(pantry) || pantry.includes(wanted);
+  });
+}
+
+function pantryTitle(slot, pantryNames) {
+  const label = {
+    breakfast: "Breakfast",
+    lunch: "Lunch",
+    snacks: "Snack",
+    dinner: "Dinner",
+    mealOfTheDay: "Meal",
+  }[slot] || "Meal";
+  const names = pantryNames.slice(0, 3).join(" and ");
+  return names ? `${names} ${label}` : label;
+}
+
+function normalizeMealForPantry({ slot, meal, fallback, pantryNames }) {
+  if (!pantryNames.length) return meal;
+
+  const recipeIngredients = meal.recipeIngredients.filter((item) => matchesPantry(item.name, pantryNames));
+  const ingredientsUsed = meal.ingredientsUsed.filter((item) => matchesPantry(item.name, pantryNames));
+  const titleMentionsPantry = pantryNames.some((name) => normalizeName(meal.title).includes(normalizeName(name)));
+
+  return {
+    ...meal,
+    title: titleMentionsPantry ? meal.title : pantryTitle(slot, pantryNames),
+    description: `Uses pantry items: ${pantryNames.join(", ")}. ${meal.description}`,
+    recipeIngredients: recipeIngredients.length ? recipeIngredients : fallback.recipeIngredients,
+    ingredientsUsed: ingredientsUsed.length ? ingredientsUsed : fallback.ingredientsUsed,
+  };
+}
+
+export function sanitizeMealPlanForPantry(plan, pantryItems = []) {
+  const pantryNames = pantryItems.map((item) => String(item.name || "").trim()).filter(Boolean);
+  if (!plan || !pantryNames.length) return plan;
+
+  const out = { ...plan };
+  const slots = Array.isArray(out.availableSlots) && out.availableSlots.length
+    ? out.availableSlots
+    : ["breakfast", "lunch", "dinner"];
+
+  for (const slot of slots) {
+    const meal = out[slot];
+    if (!meal || typeof meal !== "object") continue;
+
+    const recipeIngredients = Array.isArray(meal.recipeIngredients)
+      ? meal.recipeIngredients.filter((item) => matchesPantry(item.name, pantryNames))
+      : [];
+    const ingredientsUsed = Array.isArray(meal.ingredientsUsed)
+      ? meal.ingredientsUsed.filter((item) => matchesPantry(item.name, pantryNames))
+      : [];
+    const titleMentionsPantry = pantryNames.some((name) => normalizeName(meal.title).includes(normalizeName(name)));
+
+    out[slot] = {
+      ...meal,
+      title: titleMentionsPantry ? meal.title : pantryTitle(slot, pantryNames),
+      description: `Uses pantry items: ${pantryNames.join(", ")}. ${meal.description || ""}`.trim(),
+      recipeIngredients: recipeIngredients.length
+        ? recipeIngredients
+        : pantryItems.map((item) => ({
+            name: String(item.name),
+            quantity: String(Math.min(Number(item.quantity) || 1, 1)),
+            unit: item.unit || "unit",
+          })),
+      ingredientsUsed: ingredientsUsed.length
+        ? ingredientsUsed
+        : pantryItems.map((item) => ({
+            name: String(item.name),
+            quantity: Math.min(Number(item.quantity) || 1, 1),
+          })),
     };
   }
+
   return out;
 }
 

@@ -4,6 +4,7 @@ import { PantryItem } from "../models/PantryItem.js";
 import { MealPlan } from "../models/MealPlan.js";
 import { requireDb } from "../middleware/clientId.js";
 import { requireAuth } from "../middleware/auth.js";
+import { sanitizeMealPlanForPantry } from "../services/mealPlanAI.js";
 
 const router = Router();
 router.use(requireDb, requireAuth);
@@ -77,7 +78,7 @@ router.get("/", async (req, res, next) => {
       dailyCalorieTarget: target,
       consumedCalories: consumed,
       remainingCalories: remaining,
-      mealPlan: plan || null,
+      mealPlan: plan ? sanitizeMealPlanForPantry(plan, pantryItems) : null,
       pantryOverview,
       weeklyCalories,
     });

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import AppLayout from "./components/AppLayout.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
@@ -9,6 +9,8 @@ import Profile from "./screens/Profile.jsx";
 import TodayPlan from "./screens/TodayPlan.jsx";
 import { bootstrapAuth } from "./store/authSlice.js";
 import { useDispatch } from "./store/redux.js";
+
+const Dashboard = lazy(() => import("./screens/Dashboard.jsx"));
 
 export default function App() {
   const dispatch = useDispatch();
@@ -23,6 +25,14 @@ export default function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
           <Route index element={<Home />} />
+          <Route
+            path="dashboard"
+            element={
+              <Suspense fallback={<p>Loading dashboard...</p>}>
+                <Dashboard />
+              </Suspense>
+            }
+          />
           <Route path="profile" element={<Profile />} />
           <Route path="pantry" element={<Pantry />} />
           <Route path="today" element={<TodayPlan />} />

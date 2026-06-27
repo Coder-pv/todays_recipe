@@ -10,6 +10,7 @@ export function buildStubMealPlan({ profile, pantryItems, date, servingPeople })
   const n = Math.max(1, servingPeople || 1);
   const top = (pantryItems || []).slice(0, 3).map((p) => p.name);
   const pantryHint = top.length ? top.join(", ") : "pantry staples";
+  const titleBase = top.length ? top.join(" and ") : "Pantry";
 
   const pref = profile?.dietaryPreference || "vegetarian";
   const dist = profile?.mealDistribution || "balanced";
@@ -30,7 +31,7 @@ export function buildStubMealPlan({ profile, pantryItems, date, servingPeople })
   const allergies = (profile?.allergies || []).filter(Boolean).join(", ") || "none listed";
 
   const breakfast = {
-    title: `${pref === "vegan" ? "Vegan " : ""}Morning bowl`,
+    title: `${titleBase} breakfast`,
     description: `Quick ${pref} breakfast using ${pantryHint}. Date ${date}. Serves ~${n}. Avoid: ${allergies}.`,
     calories: Math.round(bCal * (0.85 + n * 0.05)),
     recipeIngredients: buildRecipeIngredients("breakfast", n, pantryItems),
@@ -39,8 +40,8 @@ export function buildStubMealPlan({ profile, pantryItems, date, servingPeople })
   };
 
   const lunch = {
-    title: `Balanced midday plate`,
-    description: `Lunch aligned with ${profile?.healthGoal || "maintenance"} goal. Uses pantry where possible.`,
+    title: `${titleBase} lunch`,
+    description: `Lunch aligned with ${profile?.healthGoal || "maintenance"} goal using only pantry items: ${pantryHint}.`,
     calories: Math.round(lCal * (0.85 + n * 0.05)),
     recipeIngredients: buildRecipeIngredients("lunch", n, pantryItems),
     steps: buildRecipeSteps("lunch", n),
@@ -48,8 +49,8 @@ export function buildStubMealPlan({ profile, pantryItems, date, servingPeople })
   };
 
   const dinner = {
-    title: dist === "light_dinner" ? `Light evening meal` : `Comfort dinner`,
-    description: `Dinner for ${n}. Distribution: ${dist}.`,
+    title: `${titleBase} dinner`,
+    description: `Dinner for ${n} using only pantry items: ${pantryHint}. Distribution: ${dist}.`,
     calories: Math.round(dCal * (0.85 + n * 0.05)),
     recipeIngredients: buildRecipeIngredients("dinner", n, pantryItems),
     steps: buildRecipeSteps("dinner", n),
@@ -57,8 +58,8 @@ export function buildStubMealPlan({ profile, pantryItems, date, servingPeople })
   };
 
   const snacks = {
-    title: "Simple snack",
-    description: `Snack aligned with ${profile?.healthGoal || "maintenance"} goal.`,
+    title: `${titleBase} snack`,
+    description: `Snack aligned with ${profile?.healthGoal || "maintenance"} goal using only pantry items: ${pantryHint}.`,
     calories: Math.round(220 * (0.85 + n * 0.05)),
     recipeIngredients: buildRecipeIngredients("snacks", n, pantryItems),
     steps: buildRecipeSteps("snacks", n),
@@ -66,8 +67,8 @@ export function buildStubMealPlan({ profile, pantryItems, date, servingPeople })
   };
 
   const mealOfTheDay = {
-    title: "Meal of the day",
-    description: `Single main meal for ${n} people. Avoid: ${allergies}.`,
+    title: `${titleBase} meal of the day`,
+    description: `Single main meal for ${n} people using only pantry items: ${pantryHint}. Avoid: ${allergies}.`,
     calories: Math.round((bCal + lCal + dCal) * 0.9),
     recipeIngredients: buildRecipeIngredients("mealOfTheDay", n, pantryItems),
     steps: buildRecipeSteps("mealOfTheDay", n),
@@ -93,34 +94,11 @@ export function buildStubMealPlan({ profile, pantryItems, date, servingPeople })
 
 function buildRecipeIngredients(slot, servingPeople, pantryItems) {
   const n = Math.max(1, servingPeople);
-  const base = stubIngredientsFromPantry(pantryItems, slot, n).map((item) => ({
+  return stubIngredientsFromPantry(pantryItems, slot, n).map((item) => ({
     name: item.name,
     quantity: String(item.quantity),
     unit: "unit",
   }));
-  const extras = {
-    breakfast: [
-      { name: "yogurt or plant milk", quantity: String(n), unit: "cup" },
-      { name: "cinnamon", quantity: "0.5", unit: "tsp" },
-    ],
-    lunch: [
-      { name: "olive oil", quantity: "1", unit: "tbsp" },
-      { name: "lemon juice", quantity: "1", unit: "tbsp" },
-    ],
-    snacks: [
-      { name: "fruit", quantity: String(n), unit: "piece" },
-      { name: "nuts", quantity: "0.25", unit: "cup" },
-    ],
-    dinner: [
-      { name: "garlic", quantity: "2", unit: "cloves" },
-      { name: "spice blend", quantity: "1", unit: "tsp" },
-    ],
-    mealOfTheDay: [
-      { name: "olive oil", quantity: "1", unit: "tbsp" },
-      { name: "fresh herbs", quantity: "2", unit: "tbsp" },
-    ],
-  };
-  return [...base, ...(extras[slot] || extras.dinner)];
 }
 
 function buildRecipeSteps(slot, servingPeople) {

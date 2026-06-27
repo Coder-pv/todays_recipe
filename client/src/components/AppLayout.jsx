@@ -9,6 +9,7 @@ import LogoMark from "./LogoMark.jsx";
 
 const nav = [
   { to: "/", label: "Home", end: true },
+  { to: "/dashboard", label: "Dashboard" },
   { to: "/pantry", label: "Pantry" },
   { to: "/today", label: "Today's Recipe" },
   { to: "/profile", label: "Meal Preference" },

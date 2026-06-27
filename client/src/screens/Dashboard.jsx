@@ -8,39 +8,73 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import { useClientId } from "../hooks/useClientId.js";
 import { getDashboard } from "../api/client.js";
 import { todayKey } from "../lib/dates.js";
 import Card from "../components/Card.jsx";
-import { BrandHero, UserReviewsSection } from "../components/BrandSections.jsx";
+import { useSelector } from "../store/redux.js";
 
 const SLOTS = [
   { key: "breakfast", label: "Breakfast" },
   { key: "lunch", label: "Lunch" },
+  { key: "snacks", label: "Snacks" },
   { key: "dinner", label: "Dinner" },
+  { key: "mealOfTheDay", label: "Meal of the day" },
 ];
 
+const DEMO_WEEKLY_CALORIES = [1280, 1520, 1380, 1710, 1460, 1840, 1620];
+const DEMO_TARGET = 2000;
+
+function addDaysYmd(ymd, delta) {
+  const [year, month, day] = ymd.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  date.setDate(date.getDate() + delta);
+  const yy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yy}-${mm}-${dd}`;
+}
+
+function demoWeekFor(date) {
+  return DEMO_WEEKLY_CALORIES.map((kcal, index) => ({
+    day: addDaysYmd(date, index - 6).slice(5),
+    kcal,
+  }));
+}
+
 export default function Dashboard() {
-  const clientId = useClientId();
+  const token = useSelector((state) => state.auth.token);
   const [dash, setDash] = useState(null);
   const [err, setErr] = useState("");
 
   const date = todayKey();
 
   useEffect(() => {
-    if (!clientId) return;
-    getDashboard(clientId, date)
+    if (!token) return;
+    getDashboard(token, date)
       .then(setDash)
       .catch((e) => setErr(e.message));
-  }, [clientId, date]);
+  }, [token, date]);
 
-  if (!clientId) return <p>Loading…</p>;
+  if (!token) return <p>Loading…</p>;
 
-  const chartData =
+  const weeklyCalories =
     dash?.weeklyCalories?.map((w) => ({
       day: w.date.slice(5),
       kcal: w.consumed,
     })) ?? [];
+  const chartData = weeklyCalories.length
+    ? weeklyCalories.map((w, index) => ({
+        ...w,
+        kcal: w.kcal > 0 ? w.kcal : DEMO_WEEKLY_CALORIES[index] ?? 0,
+      }))
+    : demoWeekFor(date);
+  const consumedCalories = dash?.consumedCalories ?? DEMO_WEEKLY_CALORIES.at(-1);
+  const dailyCalorieTarget = dash?.dailyCalorieTarget ?? DEMO_TARGET;
+  const remainingCalories = dash?.remainingCalories ?? Math.max(0, dailyCalorieTarget - consumedCalories);
+  const activeMealSlots =
+    Array.isArray(dash?.mealPlan?.availableSlots) && dash.mealPlan.availableSlots.length
+      ? SLOTS.filter((slot) => dash.mealPlan.availableSlots.includes(slot.key))
+      : SLOTS.filter((slot) => ["breakfast", "lunch", "dinner"].includes(slot.key));
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
@@ -60,20 +94,20 @@ export default function Dashboard() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
         <Card>
           <div style={{ fontSize: "0.85rem", color: "var(--color-text-muted)" }}>Consumed</div>
-          <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--color-brand)" }}>
-            {dash ? dash.consumedCalories : "—"} kcal
+          <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--color-forest)" }}>
+            {consumedCalories} kcal
           </div>
         </Card>
         <Card>
           <div style={{ fontSize: "0.85rem", color: "var(--color-text-muted)" }}>Remaining</div>
-          <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--color-forest)" }}>
-            {dash ? dash.remainingCalories : "—"} kcal
+          <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--color-brand)" }}>
+            {remainingCalories} kcal
           </div>
         </Card>
         <Card>
           <div style={{ fontSize: "0.85rem", color: "var(--color-text-muted)" }}>Daily target</div>
           <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--color-brand-muted)" }}>
-            {dash ? dash.dailyCalorieTarget : "—"} kcal
+            {dailyCalorieTarget} kcal
           </div>
         </Card>
       </div>
@@ -95,7 +129,7 @@ export default function Dashboard() {
                   borderRadius: 8,
                 }}
               />
-              <Bar dataKey="kcal" fill="var(--color-brand)" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="kcal" fill="var(--color-forest)" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -125,7 +159,7 @@ export default function Dashboard() {
             <p style={{ color: "var(--color-text-muted)" }}>No plan yet — generate on Today&apos;s Plan.</p>
           ) : (
             <ul style={{ margin: 0, paddingLeft: "1.1rem" }}>
-              {SLOTS.map(({ key, label }) => {
+              {activeMealSlots.map(({ key, label }) => {
                 const m = dash.mealPlan[key];
                 return (
                   <li key={key} style={{ marginBottom: "0.5rem", color: "var(--color-text-muted)" }}>
