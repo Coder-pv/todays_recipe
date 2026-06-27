@@ -43,9 +43,10 @@ So I built RecipeBook — an AI-powered meal planning assistant that remembers p
 
 ## Architecture
 
+![RecipeBook architecture](docs/images/architecture.png)
+
 The app is split into four independent runtime concerns — frontend, backend, database, and AI provider — so each layer can be swapped, scaled, or deployed independently.
 
-````
 
 **Key design decisions:**
 
@@ -62,7 +63,7 @@ The app is split into four independent runtime concerns — frontend, backend, d
 
 ```bash
 npm run install:all
-````
+```
 
 ### 2. Configure environment variables
 
